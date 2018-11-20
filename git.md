@@ -16,7 +16,17 @@
 
 #### Locally initialize and pull from remote repository
 `$ git init` 
+
 `$ git pull <repo-url>` "git fetch + git merge" - fetch and merge with the local file.
+
+
+#### add, rename, remove remote
+`$ git remote add <short-name> <url>`
+
+`$ git remote rename <old-name> <new-name>`
+
+`$ git remote remove <short-name>`
+
 
 
 ## Stage changes to commit
@@ -31,6 +41,9 @@
 `$ git add <file-name>`
 
 `$ git add *.<extension>` Supports regular expressions
+
+## Renaming files
+`$ git mv <old-name> <new-name>`
 
 
 ## Commit changes
@@ -75,6 +88,12 @@
 `$ git branch -D <branch-name>` force delete branch
 
 
+## Delete branch
+`$ git push --delete <remote-name> <branch-name>` deleting remote branch - in most cases `remote` name is `origin`
+
+`$ git branch -d <branch-name>` deleting local branch `-D` for force delete
+
+
 #### Move branches using refs
 `$ git checkout HEAD~2` only move head
 
@@ -97,4 +116,33 @@
 
 `$ git stash pop` get back the last stash & remove from the list
 
+
+#### Unmodifying a Modified file
+`$ git checkout --<file>` dangerous command :p. any changes made are completely gone. use with caution
+
+
+## Reset branch
+`$ git reset --<mode> HEAD~<number>` works in local - deletes history
+
+mode
+ - soft : commit is reset but files remain staged
+
+ - hard : everything is deleted along with directory
+
+ - mixed: files becomes unstaged
+ 
+
+`$ git revert HEAD` works in both by commiting a new commit with invert of HEAD
+
+`$ git revert <commit-hash>` same
+
+
+## cherry-pick, merge, rebase
+`$ git cherry-pick <hash1> <hash2> ...` copies commits with the provided hash and place it under current HEADf
+
+`$ git merge <branch-name>` merge the provided branch with the current branch
+
+`$ git rebase <branch-name>` merge the provided branch with the current branch in which provided branch-name is deleted as it never existed
+
+`$ git rebase -i HEAD~<number>` interactive way - reorder or drop upto provided parent
 
