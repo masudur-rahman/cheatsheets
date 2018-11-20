@@ -124,13 +124,13 @@
 ## Reset branch
 `$ git reset --<mode> HEAD~<number>` works in local - deletes history
 
-mode
+mode:
  - soft : commit is reset but files remain staged
 
  - hard : everything is deleted along with directory
 
  - mixed: files becomes unstaged
- 
+
 
 `$ git revert HEAD` works in both by commiting a new commit with invert of HEAD
 
@@ -145,4 +145,27 @@ mode
 `$ git rebase <branch-name>` merge the provided branch with the current branch in which provided branch-name is deleted as it never existed
 
 `$ git rebase -i HEAD~<number>` interactive way - reorder or drop upto provided parent
+
+
+## Tags
+
+`git tag` show all tags
+
+`git tag -a <tag name> -m "<tag message>"` annotated tag
+
+`git tag <tag name>` lightweight tag
+
+`git show <tag name>` show info about the tag
+
+`git tag -a <tag name> <commit hash>` tag previous commit
+
+`git push origin --tags` push all tags to remote
+
+`git push origin <tag name>` push specific tag to remote
+
+`git tag -d <tag name>` delete tag
+
+`git push origin :refs/tags/<tag name>` update deletion in remote
+
+`git checkout -b <branch name> <tag name>` to make change to a previous tag make a branch first
 
