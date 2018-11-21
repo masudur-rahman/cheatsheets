@@ -124,7 +124,7 @@
 ## Reset branch
 `$ git reset --<mode> HEAD~<number>` works in local - deletes history
 
-mode:
+mode : 
  - soft : commit is reset but files remain staged
 
  - hard : everything is deleted along with directory
@@ -149,23 +149,31 @@ mode:
 
 ## Tags
 
-`git tag` show all tags
+`$ git tag` show all tags
 
-`git tag -a <tag name> -m "<tag message>"` annotated tag
+`$ git tag -a <tag name> -m "<tag message>"` annotated tag
 
-`git tag <tag name>` lightweight tag
+`$ git tag <tag name>` lightweight tag
 
-`git show <tag name>` show info about the tag
+`$ git show <tag name>` show info about the tag
 
-`git tag -a <tag name> <commit hash>` tag previous commit
+`$ git tag -a <tag name> <commit hash>` tag previous commit
 
-`git push origin --tags` push all tags to remote
+`$ git push origin --tags` push all tags to remote
 
-`git push origin <tag name>` push specific tag to remote
+`$ git push origin <tag name>` push specific tag to remote
 
-`git tag -d <tag name>` delete tag
+`$ git tag -d <tag name>` delete tag
 
-`git push origin :refs/tags/<tag name>` update deletion in remote
+`$ git push origin :refs/tags/<tag name>` update deletion in remote
 
-`git checkout -b <branch name> <tag name>` to make change to a previous tag make a branch first
+`$ git checkout -b <branch name> <tag name>` to make change to a previous tag make a branch first
+
+
+## Alias
+It's like #define in C programming
+
+`$ git config --global alias.ci commit`
+
+`$ git config --global alias.last 'log -1 HEAD'` After this `git last` shows the log of last commit.
 
