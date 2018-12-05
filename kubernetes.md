@@ -58,6 +58,14 @@ Networking Options :
 
 `kubectl describe deployments/<container-name>` -to get detailed description about the deployment
 
+#### Delete running service, deployment and pods...
+
+`kubectl delete deployment <deployment-name>`
+
+`kubectl delete service <service-name>`
+
+`kubectl delete pod <pod-name>`
+
   
 #### Update the version of the App
 
