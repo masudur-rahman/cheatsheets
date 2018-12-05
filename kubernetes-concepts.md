@@ -1,13 +1,14 @@
 # <span style="color:blue"> Concepts of Kubernetes</span>
 
-### What is Kubernetes ? What does K8s stand for ?
+## What is Kubernetes ? What does K8s stand for ?
 
 The name ***Kubernetes*** originates from Greek, meaning helmsman or pilot and is the root of governor and cybernetic.<br>
 ***K8s*** is an abbreviation derived by replacing the 8 letters "ubernete" with "8"... 
+<br><br>
 
 
-### Kubernetes Components
-
+-------------------------
+## Kubernetes Components
 
 1. **Master Components** :
     It provides the clusters control plane. It makes global decisions about the cluster. Can run on any machine in the cluster but simply uses one.
@@ -72,6 +73,62 @@ The name ***Kubernetes*** originates from Greek, meaning helmsman or pilot and i
     - _Cluster-level Logging_ : 
         - saves container logs
     
+    <br><br><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------
+## The Kubernetes API
+
+1. **Api Changes** :
+    
+2. **OpenAPI and Swagger definitions** :
+
+3. ....
+4. ....
+5. ....
+6. ....
+
+
+<br><br><br>
+
+
+
+
+
+---------------------------------
+## Working with Kubernetes Objects
+
+#### Understanding Kubernetes Objects
+    
+- _Kubernetes Objects_ describe :
+    - what containerized apps are running (and on which nodes)
+    - the resources available to those apps
+    - the policies around how those apps behave i.e.: restart, upgrades and fault-tolerance
     
 
-----------------------------------
+- _Object Spec and Status_ : 
+    Kubernetes object includes two object field: Object _Spec_ and Object _Status_.
+    - Object Spec : the desired state for the object - the characteristics that you want the object to have.
+    - Object Status : the actual state of the object. <br>
+    Kubernetes Control Plane actively manages an object's actual state to match the desired state.
+- _Describing a Kubernetes Object_ : 
+    - Spec must be provided at creation. desired state includes basic info like name, number of replicas.
+     
+    
+
