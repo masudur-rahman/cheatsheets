@@ -91,7 +91,7 @@ The name ***Kubernetes*** originates from Greek, meaning helmsman or pilot and i
 
 
 
-
+    
 ----------------------------------------
 ## The Kubernetes API
 
@@ -106,11 +106,10 @@ The name ***Kubernetes*** originates from Greek, meaning helmsman or pilot and i
 
 
 <br><br><br>
-
-
-
-
-
+    
+    
+    
+    
 ---------------------------------
 ## Working with Kubernetes Objects
 
@@ -131,4 +130,42 @@ The name ***Kubernetes*** originates from Greek, meaning helmsman or pilot and i
     - Spec must be provided at creation. desired state includes basic info like name, number of replicas.
      
     
+    
+------------------------------------
 
+#### Names
+
+All objects in Kubernetes REST API are uniquely identified by a Name and UID.
+
+- **Name** :
+    - A client-provided string to refer an object in a resource URL i.e.: `/api/v1/pods/some-name`.
+    - Unique in a given kind
+    - max length 253 chars, lower alphanumeric
+    
+- **UIDs** :
+    - Kubernetes system generated string to uniquely identify objects
+    - unique over the whole lifetime of kubernetes
+    
+
+    
+--------------------------------------
+
+#### Namespaces
+
+Virtual clusters backed by same physical cluster are known as _namespaces_.
+
+- **Working with Namespaces** :
+    - Viewing namespaces : <br>
+        `$ kubectl get namespaces` <br>
+        Initial Namespaces : 
+        1. default
+        2. kube-system
+        3. kube-public 
+    - Setting the namespace for a request : 
+        ```
+        $ kubectl --namespace=<insert-namespace-name-here> run <container-name> --image=<username>/<image-name-with-version>
+        $ kubectl --namespace=<insert-namespace-name-here> get pods
+        ```
+        
+        
+        
