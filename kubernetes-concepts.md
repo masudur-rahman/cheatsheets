@@ -717,3 +717,155 @@ All communication paths from the cluster to the master terminate at the apiserve
 In a typical deployment, the apiserver is configured to listen for remote connections on a secure HTTPs port (443) with one or more clients.
 
 The master components also communicate with the cluster apiserver over the secure port.
+
+
+#### Master to Cluster
+
+Two primary communication paths from the master (apiserver) to the cluster are available.
+
+* The first one is from the apiserver to the kubelet process which runs on each node in the cluster.
+* The second one is from the apiserver to any node, pod or service through the apiserver's proxy functionality.
+
+##### apiserver to kubelet
+
+The connections from the apiserver to the kubelet are used for:
+
+* Fetching logs for pods.
+* Attaching (through kubectl) to running pods.
+* Providing the kubelet’s port-forwarding functionality.
+
+Kubelet authentication and/or authorization should be enabled to secure the kubelet API
+
+
+##### apiserver to nodes, pods and services
+
+default plain HTTP connections. no guarantee of integrity. these connections are **not currently safe** to run over untrusted and/or public networks.  
+
+
+<br><br><br>
+
+
+--------------------------------------
+
+
+### Concepts underlying the Cloud Controller Manager
+
+<br><br><br>
+
+
+--------------------------------------
+
+
+
+## Containers
+
+#### Images
+
+
+// Faltu jinis
+
+
+<br><br><br><Br>
+
+
+---------------------------
+
+
+#### Container Environment Variables
+
+##### Container environment: 
+
+The kubernetes container environment5 provides several important resources to Containers :
+
+* A filesystem, which is a combination of an image and one or more volumes
+* Information about the container itself 
+* Information about other objects in the cluster
+
+
+
+<br><br><br><Br>
+
+
+---------------------------
+
+
+#### Runtime Class
+
+
+<br><br><br><Br>
+
+
+---------------------------
+
+
+
+#### Container Lifecycle Hooks
+
+##### Container Hooks
+
+There are two hooks that are exposed to Containers :
+
+* PostStart : This hook executes immediately after a container is created.
+* PreStop : This hook is called immediately before before a container is terminated.
+
+Users should make their hook handlers as lightweight as possible.
+
+If the `PostStart` hook takes too long to run or hangs, the Container cannot reach a `running` state.
+
+Similarly, if the `PreStop` hook hangs during execution, the Pod phase stays in a `Terminating` state and is killed after `terminationGracePeriodSeconds` of pod ends.
+
+If a `PostStart` or `PreStop` hook fails, it kills the Container.
+
+
+
+<br><br><br><Br>
+
+
+---------------------------
+
+
+
+## Workloads
+ 
+ 
+### Pods
+
+#### Pod Overview 
+
+##### Understanding Pods
+
+A **Pod** is the basic building block of Kubernetes - the smallest and the simplest unit in the Kubernetes object model that anyone create or deploy. A Pod represents a running process on the cluster.
+
+A Pod encapsulates an application container (or, in some cases multiple containers), storage resources, a unique network IP and options that govern how the container(s) should run. 
+
+Docker is the most common container runtime used in a Kubernetes Pod.
+
+Pods in a Kubernetes cluster can be used in two main ways :
+
+* Pods that run a single container : The "one-container-per-Pod" model is the most common Kubernetes use case. It's like a wrapper around a single container.
+
+* Pods that run multiple containers that need to work together.  
+
+###### How Pods manage multiple Containers
+
+Pods are designed to support multiple cooperating processes (as containers) that form a cohesive unit of service. The containers are automatically co-located and scheduled in the same node. They can share resources and dependencies, communicate with one another.
+
+
+![Pod Diagram](https://d33wubrfki0l68.cloudfront.net/aecab1f649bc640ebef1f05581bfcc91a48038c4/728d6/images/docs/pod.svg)
+
+
+###### Pod Diagram
+
+Pods provide two kinds of shared resources for their constituent containers : networking and storage.
+ 
+**Networking** :
+
+Each pod is assigned a unique IP address and network port. outside the pod, the containers can communicate using ports and inside the cluster `localhost` is used.
+
+**Storage** :
+
+A pod can specify a set of shared storage volumes. All containers in the Pod can access the shared volumes, allowing those containers to share data. 
+
+
+
+
