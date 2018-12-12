@@ -749,7 +749,7 @@ default plain HTTP connections. no guarantee of integrity. these connections are
 
 
 ### Concepts underlying the Cloud Controller Manager
-
+..........
 <br><br><br>
 
 
@@ -867,5 +867,177 @@ Each pod is assigned a unique IP address and network port. outside the pod, the 
 A pod can specify a set of shared storage volumes. All containers in the Pod can access the shared volumes, allowing those containers to share data. 
 
 
+
+
+##### Working with Pods
+
+Pods are rarely created by users - even singleton Pods. Pods do not, by themselves, self-heal. If a Pod is scheduled to a Node that fails, or if the scheduling operation itself fails, the Pod is deleted. 
+
+It's far more common in Kubernetes to manage Pods using a Controller.
+
+##### Pods and Controllers
+
+A controller can create and manage multiple Pods, handling replication and rollout and providing self-healing capabilities. If a Node fails, the Controller might automatically replace the Pod by scheduling an identical replacement on a different Node.
+
+
+##### Pod Templates
+
+Pod templates are pod specifications which are included  in other objects, such as Replication Controllers, Jobs and DaemonSets. 
+
+Controller use Pod Templates to make actual pods.
+
+A sample Pod Template :
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+    command: ['sh', '-c', 'echo Hello Kubernetes! && sleep 3600']
+```
+
+
+#### Pods
+
+A Pod is a group of one or more containers with shared storage/network.
+
+In terms of Docker constructs, a pod is modelled as a group of Docker containers with shared namespaces and shared volumes
+
+Pods serve as unit of deployment, horizontal scaling, and replication.
+
+##### Motivation for Pods
+
+
+###### Resource sharing and communication
+
+Pods enable data sharing and communication among their constituents. The applications in a pod all user same namespace (same IP and port space) and communicate using localhost. Because of this, applications in a pod must coordinate their usage of ports.
+
+Each pod has an IP address in a flat shared networking space that has full communication with other physical computers and pods across the network.
+
+The hostname is set to the pod’s Name for the application containers within the pod.
+
+
+###### Uses of Pods
+
+// ..............
+
+
+
+###### Alternatives considered
+
+*Why not just run multiple programs in a single (Docker) container ?*
+
+* Transparency : Making everything visible to users.
+* Decoupling software dependencies : to facilitate individual versioning of each container.
+* Ease of use : Users don’t need to run their own process managers, worry about signal and exit-code propagation, etc. (**Bujhi nai**)
+* Efficiency : containers can be more lighter
+
+
+   
+
+###### Durability of Pods (or lack thereof)
+
+In general, users shouldn;t need to create pods directly. They should almost always use controllers for singletons, for example `deployments`.
+
+Pod is exposed as a primitive in order to facilitate : 
+
+* scheduler and controller pluggability
+* support for pod-level operations without the need ot "proxy" them via controller APIs
+* decoupling of pod lifetime from controller lifetime.
+* decoupling of controllers and services - the endpoints just watch pods
+
+
+###### Termination of Pods
+
+ * User sends command to delete Pod, with default grace period of 30s
+ * The Pod in the API sever is considered dead along with the grace period
+ * Pod shows up Terminating when listed in the client commands
+ * (simultaneous with 3) When kubelet sees the pod as terminating, it begins the pod shutdown process
+    * If the pod has defined a **preStop** hook and the **preStop** hook is still running after the grace period expires, grace period is 2s extended
+    * The processes in the Pod are sent the TERM signal
+ * (simultaneous with 3) Pod is removed from endpoints list for service, and are no longer considered part of the set of running pods for replication controllers.
+ *When the grace period expires, any processes still running in the Pod are killed with SIGKILL
+ * The Kubelet will finish deleting the Pod on the API server by setting grace period 0 (immediate deletion). The Pod disappears from the API and is no longer visible from the client.
+ 
+ -- default graceful period is 30s. The `kubectl delete` command supports `--grace-period=<seconds>` for providing custom values.
+ 
+ additional flag `--force` is needed along with `grace-period=0` in order to perform force deletions.
+ 
+  
+
+###### Privileged mode for Pod Containers
+
+From Kubernetes v1.1, any container in a pod can enable privileged mode, using th `privileged` flag on the `SecurityContext` of the container spec. This is useful for containers that want to use linux capabilities like manipulating the network stack and accessing devices.
+
+
+### Pod Lifecycle
+
+#### Pod Phase
+
+A Pod's `status` field is a PodStatus object, which has a `phase` field.
+
+Some possible values for phase :
+
+Value | Description
+------|------------
+`Pending` | The Pod has been accepted but some Container images hasn't been created yet
+`Running` | The pod has been bound to a node and at least one container is still running
+`Succeeded` | All containers in the Pod have terminated in success and will not be restarted
+`Failed` | All containers terminated but at least one of them terminated in failure
+`Unknown` | The state of the Pod could not be obtained typically due to error in communication
+
+
+
+#### Pod Conditions
+
+A Pod has a PodStatus, which has an array of Pod Conditions through which the Pod has or has not passed. Each element of the PodCondition array has six possible fields :
+
+* The `lastProbeTime` field provides a timestamp for when the Pod condition was last probed.
+
+* The `lastTransitionTime` field provides a timestamp for when the Pod last transitioned from one status to another.
+
+* The `message` field is a human-readable message indicating details about the transition.
+
+* The `reason` field is a unique, one-word, CamelCase reason for the condition’s last transition.
+
+* The `status` field is a string, with possible values “True”, “False”, and “Unknown”.
+
+* The `type` field is a string with the following possible values:
+
+    * `PodScheduled` : the Pod has been scheduled to a node;
+    * `Ready` : the Pod is able to serve requests and should be added to the load balancing pools of all matching Services;
+    * `Initialized` : all init containers have started successfully;
+    * `Unschedulable` : the scheduler cannot schedule the Pod right now, for example due to lacking of resources or other constraints;
+    * `ContainersReady` : all containers in the Pod are ready.
+  
+ 
+##### Container Probes
+
+A **Probe** is a diagnostic performed periodically by the kubelet on a Container. To perform a diagnostic, the kubelet calls a **Handler** implemented by the Container. There are three types of handlers :
+
+* ExecAction : Executes a specified command inside the Container. The diagnostic is considered successful if the command exits with a status code of 0.
+* TCPSocketAction : Performs a TCP check against the Container’s IP address on a specified port. The diagnostic is considered successful if the port is open.
+* HTTPGetAction : Performs an HTTP Get request against the Container’s IP address on a specified port and path. The diagnostic is considered successful if the response has a status code greater than or equal to 200 and less than 400.
+
+<br><br>
+
+Each probe has one of three results:
+
+* Success: The Container passed the diagnostic.
+* Failure: The Container failed the diagnostic.
+* Unknown: The diagnostic failed, so no action should be taken.
+
+
+The kubelet can optionally perform and react to two kinds of probes on running Containers : 
+
+* `livenessProbe` : Indicates whether the container is running. If the liveness probe fails, the kubelet kills the Container and the Container is subjected to its restart policy. Default state is `success`.
+* `readinessProbe` : Indicates whether the Container is ready to service requests. If the readiness probe fails, the endpoints controller removes the Pod’s IP address from the endpoints of all Services that match the Pod. The default state of readiness before the initial delay is `Failure`. If a Container does not provide a readiness probe, the default state is `Success`.
+                                                                                   
 
 
