@@ -1145,6 +1145,7 @@ Because Init Containers have separate images from app Containers, they have some
 
 Examples :
 
+`myapp.yaml`
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -1178,6 +1179,8 @@ spec:
 ```
 
 
+
+`services.yaml` :
 ```yaml
 apiVersion: v1
 kind: Service
