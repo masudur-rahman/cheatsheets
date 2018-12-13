@@ -1040,4 +1040,211 @@ The kubelet can optionally perform and react to two kinds of probes on running C
 * `readinessProbe` : Indicates whether the Container is ready to service requests. If the readiness probe fails, the endpoints controller removes the Pod’s IP address from the endpoints of all Services that match the Pod. The default state of readiness before the initial delay is `Failure`. If a Container does not provide a readiness probe, the default state is `Success`.
                                                                                    
 
+#### Pod and Container status
 
+##### Pod readiness gate
+
+// **Bujhi nai thik**
+
+##### Restart policy
+
+A PodSpec has a `restartPolicy` field with possible values `Always`, `OnFailure`, and `Never`. The default value is `Always`. 
+
+`restartPolicy` applies to all Containers in the Pod,
+
+
+##### Pod lifetime
+
+Pods do not disappear until a human or a controller destroys them.
+
+Three types of controllers are available :
+
+* Use a Job for Pods that are expected to terminate, for example, batch computations. Jobs are appropriate only for Pods with restartPolicy equal to OnFailure or Never.
+* Use a ReplicationController, ReplicaSet, or Deployment for Pods that are not expected to terminate, for example, web servers. ReplicationControllers are appropriate only for Pods with a restartPolicy of Always.
+* Use a DaemonSet for Pods that need to run one per machine, because they provide a machine-specific system service. 
+
+**Example states** :
+
+* Pod is running and has one Container. Container exits with success.
+
+	* Log completion event.
+	* If restartPolicy is:
+		* Always: Restart Container; Pod phase stays Running.
+		* OnFailure: Pod phase becomes Succeeded.
+		* Never: Pod phase becomes Succeeded.
+* Pod is running and has one Container. Container exits with failure.
+
+	* Log failure event.
+	* If restartPolicy is:
+		* Always: Restart Container; Pod phase stays Running.
+		* OnFailure: Restart Container; Pod phase stays Running.
+		* Never: Pod phase becomes Failed.
+* Pod is running and has two Containers. Container 1 exits with failure.
+
+	* Log failure event.
+	* If restartPolicy is:
+		* Always: Restart Container; Pod phase stays Running.
+		* OnFailure: Restart Container; Pod phase stays Running.
+		* Never: Do not restart Container; Pod phase stays Running.
+	* If Container 1 is not running, and Container 2 exits:
+		* Log failure event.
+		* If restartPolicy is:
+			* Always: Restart Container; Pod phase stays Running.
+			* OnFailure: Restart Container; Pod phase stays Running.
+			* Never: Pod phase becomes Failed.
+* Pod is running and has one Container. Container runs out of memory.
+
+	* Container terminates in failure.
+	* Log OOM event.
+	* If restartPolicy is:
+		* Always: Restart Container; Pod phase stays Running.
+		* OnFailure: Restart Container; Pod phase stays Running.
+		* Never: Log failure event; Pod phase becomes Failed.
+* Pod is running, and a disk dies.
+
+	* Kill all Containers.
+	* Log appropriate event.
+	* Pod phase becomes Failed.
+	* If running under a controller, Pod is recreated elsewhere.
+* Pod is running, and its node is segmented out.
+
+	* Node controller waits for timeout.
+	* Node controller sets Pod phase to Failed.
+	* If running under a controller, Pod is recreated elsewhere.
+
+
+
+
+<br><br><br>
+
+----------------------------
+
+### Init Containers
+
+#### Understanding Init Containers
+
+A Pod can have multiple Containers running apps within it, but it can also have one or more Init Containers, which are run before the app Containers are started.
+
+Init Containers are exactly like regular Containers, except:
+
+* They always run to completion.
+* Each one must complete successfully before the next one is started.
+
+If an Init Container fails for a Pod, Kubernetes restarts the Pod repeatedly until the Init Container succeeds. However, if the Pod has a `restartPolicy` of Never, it is not restarted.
+
+
+#### What can Init Containers be used for?
+
+Because Init Containers have separate images from app Containers, they have some advantages for start-up related code:
+
+* They can contain and run utilities that are not desirable to include in the app Container image for security reasons.
+* They can contain utilities or custom code for setup that is not present in an app image. For example, there is no need to make an image FROM another image just to use a tool like sed, awk, python, or dig during setup.
+* The application image builder and deployer roles can work independently without the need to jointly build a single app image.
+* They use Linux namespaces so that they have different filesystem views from app Containers. Consequently, they can be given access to Secrets that app Containers are not able to access.
+* They run to completion before any app Containers start, whereas app Containers run in parallel, so Init Containers provide an easy way to block or delay the startup of app Containers until some set of preconditions are met.
+
+Examples :
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+    name: myapp-pod
+    labels:
+        app: myapp
+spec:
+    containers:
+      - name: myapp-container
+        image: busybox
+        command:
+            - sh
+            - -c
+            - while true; do echo app is running; sleep 1; done
+        imagePullPolicy: IfNotPresent
+    initContainers:
+      - name: init-myservice
+        image: ubuntu
+        command:
+            - sh
+            - -c
+            - "apt-get update; apt-get install dnsutils -y; until nslookup myservice; do echo waiting for myservice; sleep 2; done"
+      - name: init-mydb
+        image: ubuntu
+        command:
+            - sh
+            - -c
+            - "apt-get update; apt-get install dnsutils -y; until nslookup myservice; do echo waiting for myservice; sleep 2; done"
+    restartPolicy: Always
+```
+
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: myservice
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mydb
+spec:
+    ports:
+      - port: 80
+        protocol: TCP
+        targetPort: 9377
+``` 
+
+**Kubectl Commands** :
+
+`kubectl create -f myapp.yaml`
+
+`kubectl get -f myapp.yaml`
+
+Following will be shown:  
+```
+➤ kubectl get -f go/src/yaml_files/myapp.yaml -w
+NAME        READY   STATUS     RESTARTS   AGE
+myapp-pod   0/1     Init:0/2   0          4s
+myapp-pod   0/1   Init:0/2   0     7s
+```
+
+
+To inspect the first init container: 
+`kubectl logs myapp-pod -c init-myservice`
+
+To inspect the second init container :
+
+`kubectl logs myapp-pod -c init-mydb`
+
+ 
+
+
+`kubectl create -f services.yaml`
+
+`kubectl get -f myapp.yaml`
+
+Now the pod will be ready: 
+```
+myapp-pod   0/1   Init:0/2   0     25s
+myapp-pod   0/1   Init:1/2   0     82s
+myapp-pod   0/1   Init:1/2   0     88s
+myapp-pod   0/1   PodInitializing   0     114s
+myapp-pod   1/1   Running   0     115s
+```
+
+
+#### Pod restart reasons :
+
+A Pod can restart, causing re-execution of Init Containers, for the following reasons:
+
+* A user updates the PodSpec causing the Init Container image to change. App Container image changes only restart the app Container.
+* The Pod infrastructure container is restarted. This is uncommon and would have to be done by someone with root access to nodes.
+* All containers in a Pod are terminated while `restartPolicy` is set to Always, forcing a restart, and the Init Container completion record has been lost due to garbage collection.
