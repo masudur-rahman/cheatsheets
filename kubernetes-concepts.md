@@ -1119,9 +1119,9 @@ Three types of controllers are available :
 
 ----------------------------
 
-### Init Containers
+#### Init Containers
 
-#### Understanding Init Containers
+##### Understanding Init Containers
 
 A Pod can have multiple Containers running apps within it, but it can also have one or more Init Containers, which are run before the app Containers are started.
 
@@ -1133,7 +1133,7 @@ Init Containers are exactly like regular Containers, except:
 If an Init Container fails for a Pod, Kubernetes restarts the Pod repeatedly until the Init Container succeeds. However, if the Pod has a `restartPolicy` of Never, it is not restarted.
 
 
-#### What can Init Containers be used for?
+##### What can Init Containers be used for?
 
 Because Init Containers have separate images from app Containers, they have some advantages for start-up related code:
 
@@ -1244,10 +1244,151 @@ myapp-pod   1/1   Running   0     115s
 ```
 
 
-#### Pod restart reasons :
+##### Pod restart reasons :
 
 A Pod can restart, causing re-execution of Init Containers, for the following reasons:
 
 * A user updates the PodSpec causing the Init Container image to change. App Container image changes only restart the app Container.
 * The Pod infrastructure container is restarted. This is uncommon and would have to be done by someone with root access to nodes.
 * All containers in a Pod are terminated while `restartPolicy` is set to Always, forcing a restart, and the Init Container completion record has been lost due to garbage collection.
+
+
+
+#### Pod Preset
+
+// couldn't run : `no matches for kind "PodPreset" in version "settings.k8s.io/v1alpha1"`
+
+<br><br><br>
+
+----------------------
+----------------------
+
+### Controllers
+
+#### ReplicaSet
+
+##### How to use a ReplicaSet
+
+Most `kubectl` commands that support Replication Controllers also support ReplicaSets. 
+
+For `rolling-update` functionality using Deployments is **highly recommended**.
+Also, the `rolling-update` command is imperative whereas Deployments are declarative, `rollout` command is recommended.
+
+
+##### When to use a ReplicaSet
+
+From Deployment, creating Replicas is recommended.
+
+An example using ReplicaSet is provided below : 
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: frontend
+    matchExpressions:
+      - {key: tier, operator: In, values: [frontend]}
+  template:
+    metadata:
+      labels:
+        app: guestbook
+        tier: frontend
+    spec:
+      containers:
+      - name: php-redis
+        image: gcr.io/google_samples/gb-frontend:v3
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: GET_HOSTS_FROM
+          value: dns
+          # If your cluster config does not include a dns service, then to
+          # instead access environment variables to find service host
+          # info, comment out the 'value: dns' line above, and uncomment the
+          # line below.
+          # value: env
+        ports:
+        - containerPort: 80
+```
+
+
+Another example using `Deployment` : 
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rss-site
+spec:
+  replicas: 2
+  template:
+      metadata:
+          labels:
+              app: web
+      spec:
+          containers:
+              - name: front-end
+                image: nginx
+                ports:
+                    - containerPort: 80
+              - name: rss-reader
+                image: nickchase/rss-php-nginx:v1
+                ports:
+                    - containerPort: 88
+```
+
+
+<br><br><br>
+
+-----------------
+
+#### ReplicationController
+
+A ReplicationController ensures that a specified number of pod replicas are running at any time. 
+In other words, a ReplicationController makes sure that a pod or a homogeneous set of pods is always up and available.
+
+
+##### Running an example ReplicationController
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+
+metadata:
+    name: nginx
+spec:
+    replicas: 3
+    selector:
+        app: nginx
+    template:
+        metadata:
+            name: nginx
+            labels:
+                app: nginx
+        spec:
+            containers:
+                - name: nginx
+                  image: nginx
+                  ports:
+                    - containerPort: 80
+```
+
+
+##### Multiple release tracks
+
+to create 10 replicated pods among which 9 will be stable and 1 will be canary,
+needed to set up a ReplicationController with `replicas=9` and labels `tier=frontend, environment=prod, track=stable` and another ReplicationController with `replicas=1` and labels `tier=frontend, environment=prod, track=canary`.
+
+
+
+
