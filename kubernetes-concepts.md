@@ -962,8 +962,9 @@ Pod is exposed as a primitive in order to facilitate :
     * If the pod has defined a **preStop** hook and the **preStop** hook is still running after the grace period expires, grace period is 2s extended
     * The processes in the Pod are sent the TERM signal
  * (simultaneous with 3) Pod is removed from endpoints list for service, and are no longer considered part of the set of running pods for replication controllers.
- *When the grace period expires, any processes still running in the Pod are killed with SIGKILL
+ * When the grace period expires, any processes still running in the Pod are killed with SIGKILL
  * The Kubelet will finish deleting the Pod on the API server by setting grace period 0 (immediate deletion). The Pod disappears from the API and is no longer visible from the client.
+
  
  -- default graceful period is 30s. The `kubectl delete` command supports `--grace-period=<seconds>` for providing custom values.
  
