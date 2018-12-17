@@ -1393,3 +1393,80 @@ needed to set up a ReplicationController with `replicas=9` and labels `tier=fron
 
 
 
+<br><br><br>
+
+-------------------------------
+
+
+#### Deployments
+
+##### Creating a Deployment 
+
+`nginx-deployment.yaml` file:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.15.4
+        ports:
+        - containerPort: 80
+```
+
+###### Kubectl commands :
+
+`kubectl create -f nginx-deployment.yaml`
+
+
+##### Updating Deployment
+
+###### Image update : 
+`kubectl set image deployment deployment.v1.apps/nginx-deployment nginx=nginx:1.9.1 --record`
+
+
+###### To see rollout status :
+`kubectl rollout status deployment.v1.apps/nginx-deployment`
+
+###### To see rollout history :
+`kubectl rollout history deployment.v1.apps/nginx-deployment`
+
+##### Rollback to Previous Revision
+
+`kubectl rollout undo deployment.v1.apps/nginx-deployment` - just immediate revision
+
+`kubectl rollout undo deployment.v1.apps/nginx-deployment --to-revision=2` - to a specific revision
+
+
+##### Scaling a Deployment 
+
+`kubectl scale deployment.v1.apps/nginx-deployment --replicas=10`
+
+###### Horizontal Auto-scaling
+
+`kubectl autoscale deployment.v1.apps/nginx-deployment --min=10 --max=15 --cpu-percent=80`
+
+##### Pause, Update and Resume 
+
+`kubectl rollout pause deployment.v1.apps/nginx-deployment`
+
+`kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.9.1`
+
+`kubectl rollout resume deployment.v1.apps/nginx-deployment`
+
+
+ 
