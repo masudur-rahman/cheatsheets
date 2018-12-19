@@ -1469,4 +1469,151 @@ spec:
 `kubectl rollout resume deployment.v1.apps/nginx-deployment`
 
 
+<br><br><br>
+
+-----------------
+
+
+
+
+#### StatefulSets
+
+StatefulSet manages the deployment and scaling of a set of Pods and provides guarantees about the ordering and uniqueness of these Pods. These pods are created from same spec, but are not interchangeable.
+
+##### Using StatefulSets
+
+StatefulSets are valuable for applications that require one or more of the following.
+
+* Stable, unique network identifiers.
+* Stable, persistent storage.
+* Ordered, graceful deployment and scaling.
+* Ordered, automated rolling updates.
+
+
+##### Components
+The example below demonstrates the components of a StatefulSet.
+
+* A Headless Service, named nginx, is used to control the network domain.
+* The StatefulSet, named web, has a Spec that indicates that 3 replicas of the nginx container will be launched in unique Pods.
+* The volumeClaimTemplates will provide stable storage using PersistentVolumes provisioned by a PersistentVolume Provisioner.
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None
+  selector:
+    app: nginx
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  selector:
+    matchLabels:
+      app: nginx # has to match .spec.template.metadata.labels
+  serviceName: "nginx"
+  replicas: 3 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: nginx # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: nginx
+        image: k8s.gcr.io/nginx-slim:0.8
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "my-storage-class"
+      resources:
+        requests:
+          storage: 1Gi 
+```
+
+
+##### Pod Selector 
+
+`.spec.selector` of a StatefulSet must match the labels of its `.spec.template.metadata.labels`.
+
+##### Pod Identity
+
+###### Ordinal Index 
+
+For a StatefulSet with N replicas, each Pod in the StatefulSet will be assigned an integer ordinal, from 0 up through N-1, that is unique over the Set.
+
+###### Stable Network ID
+
+Each Pod in a StatefulSet derives its hostname from the name of the StatefulSet and the ordinal of the Pod. The pattern for the constructed hostname is `$(statefulset name)-$(ordinal)`
+
+eg. : `web-0, web-1, web-2`. 
+
+A StatefulSet can use a Headless Service to control the domain of its Pods. The domain managed by this Service takes the form: `$(service name).$(namespace).svc.cluster.local`, where “cluster.local” is the cluster domain. \
+
+As each Pod is created, it gets a matching DNS subdomain, taking the form: `$(podname).$(governing service domain)`, where the governing service is defined by the serviceName field on the StatefulSet.
+
+###### Stable Storage
+
+.....
+
+###### Pod Name Label
+
+When the StatefulSet controller creates a Pod, it adds a label, `statefulset.kubernetes.io/pod-name`
+
+##### Deployment and Scaling Guarantees
+
+* For a StatefulSet with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}.
+* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.
+* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready.
+* Before a Pod is terminated, all of its successors must be completely shutdown.
+
+##### Pod Management Policies
+
+* `OrderedReady` pod management
+* `Parallel` pod management
+
+##### Update Strategies
+
+`.spec.updateStrategy`
+
+###### On Delete
+
+When a StatefulSet's `.spec.updateStrategy.type` is set to `OnDelete`, the controller won't update the Pods until the user manually deletes the Pods.
+
+###### Rolling Updates
+
+Normal delete and update as we are used to.
+
+##### Partitions
+
+The `RollingUpdate` strategy can be partitioned by specifying a `.spec.updateStrategy.rollingUpdate.partition`. 
+
+If a partition is specified, all Pods with an ordinal that is greater than or equal to the partition will be updated when the StatefulSet's `.spec.template` is updated. The Pods with lesser ordinal number won't update even if they are deleted. They will be recreated with the previous version. 
+
  
+
+
+<br><br><br>
+
+--------------------------------------
+
+#### DaemonSet
+
+https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+
