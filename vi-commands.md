@@ -36,7 +36,7 @@ In VI editor two modes are available.
 * `:q!<return>` - Exit the editor forcefully
 * `:w<return>` - Save the contents in the file
 * `:wq<return>` or `ZZ`- Save and exit, timestamp changes as re-saved even if file isn't changed
-* `x<return>` - Save and exit if file is changed otherwise just exit the editor
+* `:x<return>` - Save and exit if file is changed otherwise just exit the editor
 
 
 
