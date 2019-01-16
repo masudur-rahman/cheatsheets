@@ -1607,7 +1607,7 @@ The `RollingUpdate` strategy can be partitioned by specifying a `.spec.updateStr
 If a partition is specified, all Pods with an ordinal that is greater than or equal to the partition will be updated when the StatefulSet's `.spec.template` is updated. The Pods with lesser ordinal number won't update even if they are deleted. They will be recreated with the previous version. 
 
  
-
+	
 
 <br><br><br>
 
@@ -1616,4 +1616,3 @@ If a partition is specified, all Pods with an ordinal that is greater than or eq
 #### DaemonSet
 
 https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
-
