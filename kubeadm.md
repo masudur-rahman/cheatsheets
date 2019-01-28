@@ -10,7 +10,7 @@
 
       `deb https://apt.kubernetes.io/ kubernetes-xenial main`
 
-       `EOF`
+      `EOF`
 
 4. `apt-get update`
 
