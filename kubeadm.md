@@ -5,42 +5,73 @@
 2. `apt-get update && apt-get install -y apt-transport-https curl`
 
 3. `curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -`
+
      `cat <<EOF >/etc/apt/sources.list.d/kubernetes.list`
+
       `deb https://apt.kubernetes.io/ kubernetes-xenial main`
+
        `EOF`
 
 4. `apt-get update`
+
      `apt-get install -y kubelet kubeadm kubectl`
+
      `apt-mark hold kubelet kubeadm kubectl`
 
 5. `echo "installing docker"`
+
    `apt-get update`
+
    `apt-get install -y \`
+
       ` apt-transport-https \`
+
       ` ca-certificates \`
-    `   curl \`
-       `software-properties-common`
+
+      `curl \`
+
+      `software-properties-common`
+
    `curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -`
+
    `add-apt-repository \`
+
       `"deb https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \`
+
       `$(lsb_release -cs) \`
-   `   stable"`
+
+      `stable"`
+
    `apt-get update && apt-get install -y docker-ce=$(apt-cache madison docker-ce | grep 17.03 | head -1 | awk '{print $3}')`
 
+
 6. `echo "installing kubernetes"`
+
    `apt-get update && apt-get install -y apt-transport-https`
+
    `curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -`
+
    `cat <<EOF >/etc/apt/sources.list.d/kubernetes.list`
+
    `deb http://apt.kubernetes.io/ kubernetes-xenial main`
+
    `EOF`
+
    `apt-get update`
+
    `apt-get install -y kubelet kubeadm kubectl`
 
+
 7. `echo "deploying kubernetes (with calico)..."`
+
    `kubeadm init --pod-network-cidr=192.168.0.0/16`
+
    `export KUBECONFIG=/etc/kubernetes/admin.conf`
+
    `kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml`
+
    `kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml`
+
 
 8. `adduser <username>` --------------------`adduser masud`
 
@@ -62,13 +93,19 @@
    ```
 
    `usermod -aG sudo <username>` ----- `usermod -aG masud`
+
    ` su - <username>` -------------------------`su - masud`
 
+
 9. `mkdir -p $HOME/.kube`
+
    `sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config`
+
    `sudo chown $(id -u):$(id -g) $HOME/.kube/config`
 
+
 10. `kubectl taint nodes --all node-role.kubernetes.io/master-`
+
 
 11. Then deploy, expose, ingress etc.
 
@@ -81,6 +118,7 @@
 1. First `6` steps are similar as `kubeadm-initializing`
 
 2. `kubeadm join --token <token> <master-ip>:<master-port> --discovery-token-ca-cert-hash sha256:<hash>`
+
 
    Example :
 
@@ -101,6 +139,7 @@
 #### To get ca-cert-hash (On master node)
 
 `openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | \`
+
    `openssl dgst -sha256 -hex | sed 's/^.* //'`
 
 
