@@ -87,6 +87,11 @@
 
 `$ git branch -D <branch-name>` force delete branch
 
+## Rename branch
+`$ git branch -m <new-name>` rename current branch to <new-name>
+ 
+`$ git branch -m <old-name> <new-name>` rename branch named <old-name> to <new-name> while in another branch
+ 
 
 ## Delete branch
 `$ git push --delete <remote-name> <branch-name>` deleting remote branch - in most cases `remote` name is `origin`
