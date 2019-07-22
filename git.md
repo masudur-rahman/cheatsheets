@@ -143,7 +143,7 @@ mode :
 
 
 ## cherry-pick, merge, rebase
-`$ git cherry-pick <hash1> <hash2> ...` copies commits with the provided hash and place it under current HEADf
+`$ git cherry-pick <hash1> <hash2> ...` copies commits with the provided hash and place it under current HEAD
 
 `$ git merge <branch-name>` merge the provided branch with the current branch
 
