@@ -66,6 +66,10 @@
 `$ git diff`  shows the differences with previous commit
 
 
+## Show names of changed files in a particular commit
+`$ git show --pretty="" --name-only <commit-hash>`
+
+
 ## Branching 
 `$ git branch <branch-name>` create new branch
 
