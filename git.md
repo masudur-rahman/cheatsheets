@@ -20,12 +20,14 @@
 `$ git pull <repo-url>` "git fetch + git merge" - fetch and merge with the local file.
 
 
-#### add, rename, remove remote
+#### add, rename, remove, replace remote url
 `$ git remote add <short-name> <url>`
 
 `$ git remote rename <old-name> <new-name>`
 
 `$ git remote remove <short-name>`
+
+`$ git remote set-url <short-name> <new.git.url>`
 
 
 
