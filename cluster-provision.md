@@ -1,12 +1,12 @@
 # Kubernetes Cluster Provision
 
 ## Steps
-- Prerequisites
-- Install Container Runtime
-- Install kubeadm, kubelet, kubectl
-- Initialize kubeadm on master node
-- Enable CNI for Pod networking
-- Join worker nodes to master node
+- [Prerequisites](#prerequisites-all-nodes)
+- [Install Container Runtime](#install-container-runtime-interface-all-nodes)
+- [Install kubeadm, kubelet, kubectl](#install-kubeadm-kubelet-kubectl-all-nodes)
+- [Initialize kubeadm on master node](#initialize-kubeadm-on-master-node)
+- [Enable CNI for Pod networking](#enable-cni-plugin-for-pod-networking)
+- [Join worker nodes to master node](#join-worker-nodes-to-master-node)
 
 ### Prerequisites (All Nodes)
 - Take at least two Ubuntu (22.04 LTS) VM, and SSH into the nodes
@@ -140,7 +140,7 @@ Installation of `CRI-O` and `Docker` will be shown here.
     ```sh
     kubectl taint nodes --all node-role.kubernetes.io/control-plane-
     ```
-### CNI Plugin for Pod Networking
+### Enable CNI Plugin for Pod Networking
 - Install Calico Network Plugin
     ```sh
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
@@ -156,10 +156,10 @@ Installation of `CRI-O` and `Docker` will be shown here.
     kubeadm token create --print-join-command
     ```
  - Run the output join command in the worker nodes
- ```sh
- # sample join command
- kubeadm join <ip-address>:<port> --token <token> --discovery-token-ca-cert-hash <discovery-token>
- ```
+    ```sh
+    # sample join command
+    kubeadm join <ip-address>:<port> --token <token> --discovery-token-ca-cert-hash <discovery-token>
+    ```
 - Make sure the worker node is joined, by listing nodes
     ```sh
     kubectl get nodes
